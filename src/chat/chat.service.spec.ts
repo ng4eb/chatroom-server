@@ -73,6 +73,10 @@ describe('ChatService', () => {
               findMany: jest.fn().mockReturnValue(mockGetChats),
               findFirst: jest.fn().mockReturnValue(null),
             },
+            chatMessage: {
+              updateMany: jest.fn().mockReturnValue(null),
+              count: jest.fn().mockReturnValue(null),
+            },
             user: {
               findUnique: jest.fn().mockReturnValue(mockGetUser),
             },
@@ -171,6 +175,36 @@ describe('ChatService', () => {
             },
           },
         },
+      });
+    });
+  });
+
+  describe('updateChatsToRead', () => {
+    it('should call update with correct params', async () => {
+      const mockPrismaUpdateChats = jest.fn().mockReturnValue(null);
+      const whereClause = {
+        NOT: {
+          sender_id: 1,
+        },
+        chatroom: {
+          id: 'testing-uuid',
+          users: {
+            some: {
+              id: 1,
+            },
+          },
+        },
+      };
+      const data = {
+        is_read: true,
+      };
+      jest
+        .spyOn(prisma.chatMessage, 'updateMany')
+        .mockImplementation(mockPrismaUpdateChats);
+      await service.updateChatsToReadByChatRoomId(1, 'testing-uuid');
+      expect(mockPrismaUpdateChats).toBeCalledWith({
+        where: whereClause,
+        data,
       });
     });
   });

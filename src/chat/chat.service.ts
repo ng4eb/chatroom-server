@@ -38,10 +38,24 @@ export class ChatService {
         },
       },
     });
-    return chatRooms.map((room) => ({
+    const unreadMessageCount = [];
+    for (const room of chatRooms) {
+      const count = await this.prisma.chatMessage.count({
+        where: {
+          is_read: false,
+          chatroom_id: room.id,
+          NOT: {
+            sender_id: id,
+          },
+        },
+      });
+      unreadMessageCount.push(count);
+    }
+    return chatRooms.map((room, i) => ({
       id: room.id,
       users: [...room.users],
       messages: [...room.chatroom_messages],
+      unreadMessageCount: unreadMessageCount[i],
     }));
   }
 
@@ -113,6 +127,28 @@ export class ChatService {
     return await this.prisma.chatMessage.create({
       data,
     });
+  }
+
+  async updateChatsToReadByChatRoomId(readerId: number, chatRoomId: string) {
+    await this.prisma.chatMessage.updateMany({
+      where: {
+        NOT: {
+          sender_id: readerId,
+        },
+        chatroom: {
+          id: chatRoomId,
+          users: {
+            some: {
+              id: readerId,
+            },
+          },
+        },
+      },
+      data: {
+        is_read: true,
+      },
+    });
+    return 'okay';
   }
 
   private async validateConversationBetweenTwoIds(

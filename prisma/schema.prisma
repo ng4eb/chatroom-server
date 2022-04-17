@@ -39,5 +39,6 @@ model ChatMessage {
   replied     ChatMessage?  @relation("reply_chats", fields: [replied_id], references: [id])
   reply       ChatMessage[] @relation("reply_chats")
   content     String
+  is_read     Boolean       @default(false)
   created_at  DateTime      @default(now())
 }
