@@ -100,9 +100,7 @@ export class ChatService {
     });
     if (!chatRoom) {
       // Create a new chatroom between two users
-      console.log('Creating a new chat room');
       chatRoom = await this.createChatRoomBetweenTwoUsers(fromId, toId);
-      console.log({ chatRoom });
     }
     const data = {
       chatroom_id: chatRoom.id,
@@ -112,10 +110,9 @@ export class ChatService {
     if (message.repliedId) {
       Object.assign(data, { replied_id: message.repliedId });
     }
-    const newMessage = await this.prisma.chatMessage.create({
+    return await this.prisma.chatMessage.create({
       data,
     });
-    return newMessage;
   }
 
   private async validateConversationBetweenTwoIds(
