@@ -7,7 +7,7 @@ import { JwtPayload } from 'jsonwebtoken';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService, private jwtService: JwtService) {}
+  constructor(private prisma: PrismaService, private jwt: JwtService) {}
 
   async signup(data: SignUpDto) {
     const { email, password, username, phone, gender } = data;
@@ -46,7 +46,7 @@ export class AuthService {
 
   private async generateJwt(username: string, id: number) {
     const payload: JwtPayload = { username, id };
-    const accessToken = await this.jwtService.sign(payload);
+    const accessToken = await this.jwt.sign(payload);
     return { accessToken };
   }
 

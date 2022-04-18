@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsPositive,
   IsString,
+  IsUUID,
 } from 'class-validator';
 
 export class ChatMessageResponseDto {
@@ -36,13 +37,34 @@ export class ChatMessageResponseDto {
   }
 }
 
+/* Used in HTTP Call; replaced with WebSocket Call */
+// export class SendMessageDto {
+//   @IsString()
+//   @IsNotEmpty()
+//   content: string;
+//
+//   @IsUUID()
+//   @IsOptional()
+//   repliedId?: number;
+// }
+
+/* Used in WebSocket Call */
 export class SendMessageDto {
+  @IsPositive()
+  @IsInt()
+  receiverId: number;
+
   @IsString()
   @IsNotEmpty()
   content: string;
 
-  @IsPositive()
-  @IsInt()
+  @IsUUID()
   @IsOptional()
   repliedId?: number;
+}
+
+export class ReadMessageDto {
+  @IsUUID()
+  @IsNotEmpty()
+  chatroomId: string;
 }

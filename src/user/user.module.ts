@@ -15,5 +15,6 @@ import { AuthModule } from '../auth/auth.module';
       useClass: ClassSerializerInterceptor,
     },
   ],
+  exports: [UserService],
 })
 export class UserModule {}

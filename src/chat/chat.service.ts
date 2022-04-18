@@ -1,6 +1,7 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { ChatMessageResponseDto, SendMessageDto } from './chat.dto';
+import { ChatMessageResponseDto } from './chat.dto';
+import { WsException } from '@nestjs/websockets';
 
 @Injectable()
 export class ChatService {
@@ -84,10 +85,7 @@ export class ChatService {
       },
     });
     if (!chatRoom)
-      throw new HttpException(
-        `No conversation found with user ${anotherUserId}`,
-        400,
-      );
+      throw new WsException(`No conversation found with user ${anotherUserId}`);
     return {
       messages: chatRoom.chatroom_messages.map(
         (msg) => new ChatMessageResponseDto(msg),
@@ -98,7 +96,10 @@ export class ChatService {
   async sendMessageFromIdToId(
     fromId: number,
     toId: number,
-    message: SendMessageDto,
+    message: {
+      content: string;
+      repliedId: string;
+    },
   ) {
     await this.validateConversationBetweenTwoIds(fromId, toId);
     let chatRoom = await this.prisma.chatRoom.findFirst({
@@ -124,7 +125,7 @@ export class ChatService {
     if (message.repliedId) {
       Object.assign(data, { replied_id: message.repliedId });
     }
-    return await this.prisma.chatMessage.create({
+    return this.prisma.chatMessage.create({
       data,
     });
   }
@@ -155,13 +156,13 @@ export class ChatService {
     fromId: number,
     toId: number,
   ) {
-    if (fromId === toId) throw new HttpException('No self-conversation', 400);
+    if (fromId === toId) throw new WsException('No self-conversation');
     const anotherUser = await this.prisma.user.findUnique({
       where: {
         id: toId,
       },
     });
-    if (!anotherUser) throw new HttpException('User not found', 400);
+    if (!anotherUser) throw new WsException('User not found');
   }
 
   private createChatRoomBetweenTwoUsers(id1: number, id2: number) {

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ChatService } from './chat.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { HttpException } from '@nestjs/common';
+import { WsException } from '@nestjs/websockets';
 
 const mockGetChats = [
   {
@@ -138,13 +138,13 @@ describe('ChatService', () => {
   describe('getChatsBetweenTwoUserIds', () => {
     it('should throw error if two user ids are the same', () => {
       expect(service.getChatsBewteenTwoUserIds(1, 1)).rejects.toThrowError(
-        HttpException,
+        WsException,
       );
     });
 
     it('should throw error if chatroom is not found', () => {
       expect(service.getChatsBewteenTwoUserIds(1, 2)).rejects.toThrowError(
-        HttpException,
+        WsException,
       );
     });
 
