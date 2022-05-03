@@ -21,6 +21,7 @@ export class ChatService {
           select: {
             id: true,
             username: true,
+            gender: true,
           },
         },
         chatroom_messages: {
@@ -35,6 +36,7 @@ export class ChatService {
               },
             },
             content: true,
+            created_at: true,
           },
         },
       },
@@ -55,7 +57,10 @@ export class ChatService {
     return chatRooms.map((room, i) => ({
       id: room.id,
       users: [...room.users],
-      messages: [...room.chatroom_messages],
+      messages: room.chatroom_messages.map((msg) => {
+        const { created_at, ...rest } = msg;
+        return { ...rest, createdAt: created_at };
+      }),
       unreadMessageCount: unreadMessageCount[i],
     }));
   }
@@ -125,9 +130,11 @@ export class ChatService {
     if (message.repliedId) {
       Object.assign(data, { replied_id: message.repliedId });
     }
-    return this.prisma.chatMessage.create({
+    const result = await this.prisma.chatMessage.create({
       data,
     });
+    console.log({ result });
+    return result;
   }
 
   async updateChatsToReadByChatRoomId(readerId: number, chatRoomId: string) {

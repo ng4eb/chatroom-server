@@ -16,6 +16,11 @@ export class GetUsersResponseDto {
   @Exclude()
   updated_at: Date;
 
+  @Expose({ name: 'craetedAt' })
+  createdAt() {
+    return this.created_at;
+  }
+
   constructor(partial: Partial<GetUsersResponseDto>) {
     Object.assign(this, partial);
   }

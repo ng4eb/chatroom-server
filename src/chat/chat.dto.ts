@@ -10,6 +10,7 @@ import {
 
 export class ChatMessageResponseDto {
   id: string;
+  content: string;
   @Exclude()
   sender_id: number;
   @Exclude()

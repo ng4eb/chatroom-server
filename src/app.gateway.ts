@@ -15,11 +15,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import {
-  ChatMessageResponseDto,
-  ReadMessageDto,
-  SendMessageDto,
-} from './chat/chat.dto';
+import { ReadMessageDto, SendMessageDto } from './chat/chat.dto';
 import { ChatService } from './chat/chat.service';
 import { WsGuard } from './utils/ws.guard';
 import { BadRequestTransformationFilter } from './utils/bad-request-transformation.filter';
@@ -44,9 +40,14 @@ export class AppGateway
   @SubscribeMessage('msgToServer')
   async handleMessage(client: Socket, payload: SendMessageDto) {
     this.logger.log({ payload });
-    const { senderId, receiverId, content, repliedId } = payload as any;
+    const {
+      senderId,
+      receiverId,
+      content: incomingContent,
+      repliedId,
+    } = payload as any;
     const message = {
-      content,
+      content: incomingContent,
       repliedId,
     };
     const result = await this.chatService.sendMessageFromIdToId(
@@ -54,7 +55,17 @@ export class AppGateway
       receiverId,
       message,
     );
-    const data = new ChatMessageResponseDto(result);
+    // const data = new ChatMessageResponseDto(result);
+    const { id, chatroom_id, sender_id, replied_id, content, created_at } =
+      result;
+    const data = {
+      id,
+      chatroomId: chatroom_id,
+      senderId: sender_id,
+      repliedId: replied_id,
+      content,
+      createdAt: created_at,
+    };
     /*
      !WARNING!
      Below settings are not safe at all - only for demo purposes
@@ -62,8 +73,9 @@ export class AppGateway
      A safer approach would be to store a set of connection ids
      As event identifiers for each active user and chatroom
     */
-    this.server.emit(`msgToClient-user-${senderId}`, data);
+    // for getting new chatrooms listing
     this.server.emit(`msgToClient-user-${receiverId}`, data);
+    // for both existing chatrooms listing and inside a chatroom
     this.server.emit(`msgToClient-chatroom-${result.chatroom_id}`, data);
   }
 

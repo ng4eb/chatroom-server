@@ -27,7 +27,12 @@ export class AuthService {
         gender,
       },
     });
-    return this.generateJwt(username, user.id);
+    const accessToken = await this.generateJwt(username, user.id);
+    return {
+      id: user.id,
+      username,
+      accessToken,
+    };
   }
 
   async signin(data: SignInDto) {
@@ -41,13 +46,17 @@ export class AuthService {
     const hashedPwd = user.password;
     const matched = await bcrypt.compare(password, hashedPwd);
     if (!matched) throw new HttpException('Incorrect credentials', 400);
-    return this.generateJwt(user.username, user.id);
+    const accessToken = await this.generateJwt(user.username, user.id);
+    return {
+      id: user.id,
+      username: user.username,
+      accessToken,
+    };
   }
 
   private async generateJwt(username: string, id: number) {
     const payload: JwtPayload = { username, id };
-    const accessToken = await this.jwt.sign(payload);
-    return { accessToken };
+    return this.jwt.sign(payload);
   }
 
   private async checkUserExists({
